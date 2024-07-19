@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -75,9 +74,11 @@ public class AdminController {
         return new ModelAndView("redirect:/admin");
     }
 
+    
     @GetMapping("/peliculas/{id}/editar")
     ModelAndView editarPelicula(@PathVariable Integer id) {
-        Pelicula pelicula = peliculaRepository.getOne(id);
+        Pelicula pelicula = peliculaRepository.findById(id)
+        		.orElseThrow(() -> new RuntimeException("Pelicula no encontrada con id: " + id));
         List<Genero> generos = generoRepository.findAll(Sort.by("titulo"));
 
         return new ModelAndView("admin/editar-pelicula")
@@ -85,6 +86,7 @@ public class AdminController {
                 .addObject("generos", generos);
     }
 
+    
     @PostMapping("/peliculas/{id}/editar")
     ModelAndView actualizarPelicula(@PathVariable Integer id,
                                     @Validated Pelicula pelicula, BindingResult bindingResult) {
@@ -94,7 +96,9 @@ public class AdminController {
                     .addObject("pelicula", pelicula)
                     .addObject("generos", generos);
         }
-        Pelicula peliculaFromDb = peliculaRepository.getOne(id);
+        
+        Pelicula peliculaFromDb = peliculaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pelicula no encontrada con id: " + id));
         peliculaFromDb.setTitulo(pelicula.getTitulo());
         peliculaFromDb.setSinopsis(pelicula.getSinopsis());
         peliculaFromDb.setFechaEstreno(pelicula.getFechaEstreno());
@@ -111,12 +115,15 @@ public class AdminController {
         return new ModelAndView("redirect:/admin");
     }
 
+    
     @PostMapping("/peliculas/{id}/eliminar")
     String eliminarPelicula(@PathVariable Integer id) {
-        Pelicula pelicula = peliculaRepository.getOne(id);
+        Pelicula pelicula = peliculaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pelicula no encontrada con id: " + id));
         peliculaRepository.delete(pelicula);
         fileSystemStorageService.delete(pelicula.getRutaPortada());
         return "redirect:/admin";
     }
+    
 
 }

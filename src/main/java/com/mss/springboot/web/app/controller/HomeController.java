@@ -46,7 +46,8 @@ public class HomeController {
     
     @GetMapping("/peliculas/{id}")
     ModelAndView detallesPelicula(@PathVariable Integer id) {
-        Pelicula pelicula = peliculaRepository.getOne(id);
+        Pelicula pelicula = peliculaRepository.findById(id)
+        		.orElseThrow(() -> new RuntimeException("Pelicula no encontrada con id: " + id));
         return new ModelAndView("pelicula")
                 .addObject("pelicula", pelicula);
     }
